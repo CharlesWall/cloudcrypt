@@ -2,7 +2,7 @@ const readline = require('readline');
 const {Writable} = require('stream');
 
 
-module.exports = function(question) {
+module.exports = function prompt(question) {
   process.stdout.write(question);
 
   return new Promise((resolve, reject) => {
@@ -21,7 +21,7 @@ module.exports = function(question) {
     interface.question(question, (answer) => {
       interface.close();
       console.log('');
-      resolve(answer);
+      answer ? resolve(answer) : resolve(prompt(question));
     });
   });
 }

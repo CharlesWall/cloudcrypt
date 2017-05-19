@@ -18,6 +18,7 @@ const download = require('./src/download');
 const edit = require('./src/edit');
 const prompt = require('./src/prompt');
 const outputUsage = require('./src/outputUsage');
+const list = require('./src/list');
 
 //get arguments
 //brb writting better version of argly
@@ -67,6 +68,9 @@ for(let i = 0; i < args.length; i++){
       const tempFilePath = await edit(contents);
       await upload(tempFilePath, s3Path, encryptionKey);
       await fs.unlink(tempFilePath);
+    } else if (command === 'list') {
+      const [s3Path] = tokens;
+      await list(s3Path);
     }
   } catch (error) {
     console.error(error);
