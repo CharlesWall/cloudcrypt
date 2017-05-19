@@ -1,14 +1,26 @@
-module.exports = function prompt(question) {
+const readline = require('readline');
+const {Writable} = require('stream');
+
+
+module.exports = function(question) {
+  process.stdout.write(question);
+
   return new Promise((resolve, reject) => {
-    const {stdin, stdout} = process;
+    const outputStream = new Writable({
+      write: function(chunk, encoding, callback) {
+        callback();
+      }
+    });
 
-    stdin.resume();
-    stdout.write(question);
+    const interface = readline.createInterface({
+      input: process.stdin,
+      output: outputStream,
+      terminal: true
+    });
 
-    stdin.once('data', function (data) {
-      console.log({data});
-      stdin.pause();
-      resolve(data.toString());
+    interface.question(question, (answer) => {
+      interface.close();
+      resolve(answer);
     });
   });
 }
