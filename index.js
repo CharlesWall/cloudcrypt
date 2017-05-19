@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-
-//get arguments
 const homeDir = process.env.HOME;
 const defaultKeyPath = '~/.ssh/id_rsa'.replace('~', homeDir);
 const args = process.argv.slice(2);
@@ -19,17 +17,10 @@ const upload = require('./src/upload');
 const download = require('./src/download');
 const edit = require('./src/edit');
 const prompt = require('./src/prompt');
+const outputUsage = require('./src/outputUsage');
 
-function outputUsage({error}) {
-  console.error(
-    ["cc encrypt [-i encryptionKeyFile] <sourceFile> <s3Path>",
-    "cc decrypt [-i encryptionKeyFile] <s3Path> [destinationFile]",
-    "cc edit [-i encryptionKeyFile] <s3Path>"].join('\n')
-  );
-  
-  process.exit(error);
-}
-
+//get arguments
+//brb writting better version of argly
 for(let i = 0; i < args.length; i++){
   let arg = args[i];
   
