@@ -20,6 +20,7 @@ module.exports = function(question) {
 
     interface.question(question, (answer) => {
       interface.close();
+      console.log('');
       resolve(answer);
     });
   });
