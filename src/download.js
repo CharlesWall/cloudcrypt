@@ -17,10 +17,12 @@ module.exports = async function(
 
   //decypt file
   const decipher = crypto.createDecipher(algorithm, encryptionKey);
-  return Buffer.concat([ 
+  const decrypted = Buffer.concat([ 
     decipher.update(encrypted),
     decipher.final() 
   ]);
+
+  return decrypted;
 }
 
   

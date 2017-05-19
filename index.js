@@ -1,36 +1,34 @@
 #!/usr/bin/env node
 
-const homeDir = process.env.HOME;
-const defaultKeyPath = '~/.ssh/id_rsa'.replace('~', homeDir);
 const args = process.argv.slice(2);
 const fs = require('fs-promise');
 
 const tokens = [];
 const options = {
   promptPassword: false,
-  password: '',
-  keyPath: '',
+  chain: false,
+  password: null,
+  keyPath: null,
   algorithm: 'aes-256-ctr'
 };
 
 const upload = require('./src/upload');
 const download = require('./src/download');
+const downloadEncryptionKey = require('./src/downloadEncryptionKey');
 const edit = require('./src/edit');
 const prompt = require('./src/prompt');
 const outputUsage = require('./src/outputUsage');
 const list = require('./src/list');
+const reencrypt = require('./src/reencrypt');
+const init = require('./src/init');
 
 //get arguments
 //brb writting better version of argly
 for(let i = 0; i < args.length; i++){
   let arg = args[i];
-  
-  if(arg === '-i') {
-    options.keyPath = args[++i];
-  } else if (arg === '--password') {
+
+  if (arg === '--password') {
     options.password = args[++i];
-  } else if (arg === '--prompt') {
-    options.promptPassword = true;
   } else {
     tokens.push(arg);
   }
@@ -41,16 +39,24 @@ for(let i = 0; i < args.length; i++){
   if (!command) outputUsage({error: true});
 
   try {
+    if(command === 'init') {
+      const [s3KeyPath] = tokens;
+      return init(s3KeyPath);
+    }
     //read encryption key
-    const encryptionKey = options.password 
-      || options.promptPassword && await prompt('Enter password:') 
-      || options.keyPath && await fs.readFile(options.keyPath) 
-      || await fs.readFile(defaultKeyPath);
+    const encryptionKey = await downloadEncryptionKey(options);
 
     if (command === 'encrypt') {
-      const [source, s3Path] = tokens;
-      source && s3Path || outputUsage({error:true});
-      await upload(source, s3Path, encryptionKey);
+      let [source, s3Path] = tokens;
+      source || outputUsage({error:true});
+      if (!s3Path) {
+        s3Path = source;
+        const tempFilePath = await edit('');
+        await upload(tempFilePath, s3Path, encryptionKey);
+        await fs.unlink(tempFilePath);
+      } else {
+        await upload(source, s3Path, encryptionKey);
+      }
     } else if (command === 'decrypt') {
       const [s3Path, destination] = tokens;
       s3Path || outputUsage({error:true});

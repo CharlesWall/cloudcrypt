@@ -2,11 +2,11 @@ const readline = require('readline');
 const {Writable} = require('stream');
 
 
-module.exports = function prompt(question) {
+module.exports = function prompt(question, visible) {
   process.stdout.write(question);
 
   return new Promise((resolve, reject) => {
-    const outputStream = new Writable({
+    const outputStream = visible ? process.stdout : new Writable({
       write: function(chunk, encoding, callback) {
         callback();
       }
